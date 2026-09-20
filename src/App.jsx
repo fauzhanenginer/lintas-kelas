@@ -22,13 +22,13 @@ import {
   AlertCircle, 
   Search, 
   X, 
-  CalendarCheck2,
-  Sliders,
-  Users,
-  FileText,
-  Activity,
-  PhoneCall,
-  GraduationCap
+  CalendarCheck2, 
+  Sliders, 
+  Users, 
+  FileText, 
+  Activity, 
+  PhoneCall, 
+  GraduationCap 
 } from 'lucide-react';
 import { SCHEDULE_DATA, LIST_PJMK, TARGET_CLASSES_LIST, ALL_CLASSES_SCHEDULES } from './data/schedules';
 
@@ -45,28 +45,31 @@ import {
   orderBy 
 } from 'firebase/firestore';
 
-// DATA LENGKAP DOSEN PENGAMPU & MATKUL
+// DATA LENGKAP DOSEN BERDASARKAN MATA KULIAH RESMI
 const ALL_LECTURERS_CONTACTS = [
-  { nama: "Bpk. Ir. Ade Suhara", noHp: "628128741746", isKelasG: true, matkul: "Pengantar Teknik Industri" },
-  { nama: "Pak Nana", noHp: "62811945295", isKelasG: true, matkul: "Kalkulus I" },
-  { nama: "Ibu. Yuni Syifau", noHp: "6283822577449", isKelasG: true, matkul: "Fisika Dasar I" },
-  { nama: "Ibu. Weni Trisasmi", noHp: "6282276722223", isKelasG: true, matkul: "Kimia Dasar I" },
-  { nama: "Bpk. Fadli P", noHp: "628212002181", isKelasG: true, matkul: "Gambar Teknik" },
-  { nama: "Ibu. Amalia", noHp: "6281211436933", isKelasG: true, matkul: "Tata Tulis Karya Ilmiah" },
-  { nama: "Ibu. Amelia Nur Fariza", noHp: "6282125451565", isKelasG: true, matkul: "Pendidikan Pancasila" },
-  { nama: "Ibu. Annisa Nurizati", noHp: "6282110001628", isKelasG: true, matkul: "Pendidikan Agama" },
-  { nama: "Ibu. Della", noHp: "6281377544576", isKelasG: false, matkul: "Dosen Prodi Teknik Industri" },
-  { nama: "Bpk. Karnadi", noHp: "6281293034835", isKelasG: false, matkul: "Dosen Pengampu Fakultas" },
-  { nama: "Bpk. Ir. Sayuti", noHp: "6281395962999", isKelasG: false, matkul: "Dosen Senior Teknik Industri" },
-  { nama: "Bpk. Suryadi", noHp: "6282113987998", isKelasG: false, matkul: "Dosen Teknik Industri" },
-  { nama: "Ibu. Akda", noHp: "6282245632220", isKelasG: false, matkul: "Dosen Pengampu Lintas Kelas" },
-  { nama: "Ibu. Rizky Amalia P", noHp: "6281233347689", isKelasG: false, matkul: "Dosen Pembina Kelas" },
-  { nama: "Bpk. Roban", noHp: "6285693235718", isKelasG: false, matkul: "Dosen Teknik Industri" },
-  { nama: "Bpk. Fathurohman", noHp: "6281321667082", isKelasG: false, matkul: "Dosen Pengampu" },
-  { nama: "Ibu. Hilda", noHp: "6281212001412", isKelasG: false, matkul: "Dosen Pengampu" },
-  { nama: "Ibu. Imas", noHp: "6285722190926", isKelasG: false, matkul: "Dosen Pembina" },
-  { nama: "Bpk. Surya Amal", noHp: "6289620831891", isKelasG: false, matkul: "Dosen Pengampu" },
-  { nama: "Bu Iin", noHp: "6281363690292", isKelasG: false, matkul: "Dosen Pengampu" }
+  // Semester 1 (Mata Kuliah Utama Kelas G & Paralel)
+  { nama: "Ir. Ade Suhara, S.T., M.T., IPU", noHp: "628128741746", matkulKey: "Pengantar Teknik Industri", matkulDisplay: "Pengantar Teknik Industri" },
+  { nama: "Suryadi, S.T., M.T.", noHp: "6282113987998", matkulKey: "Pengantar Teknik Industri", matkulDisplay: "Pengantar Teknik Industri" },
+  { nama: "Weni Tri Sasmi, S.Pd., M.Pd.", noHp: "6282276722223", matkulKey: "Kimia Dasar I", matkulDisplay: "Kimia Dasar I (Teori & Praktikum)" },
+  { nama: "Akda Zahrotul Wahtoni, S.Si., M.Si.", noHp: "6282245632220", matkulKey: "Kimia Dasar I", matkulDisplay: "Kimia Dasar I (Teori)" },
+  { nama: "Yuni Syifau Rohmah, S.Pd., M.Pd.", noHp: "6283822577449", matkulKey: "Kalkulus I", matkulDisplay: "Kalkulus I & Kimia Dasar (P)" },
+  { nama: "Imas Indah Mutiara, S.Pd., M.Pd.", noHp: "6285722190926", matkulKey: "Kalkulus I", matkulDisplay: "Kalkulus I" },
+  { nama: "Iin Lidia Putama Mursal, S.Si., M.Si.", noHp: "6281363690292", matkulKey: "Fisika Dasar I", matkulDisplay: "Fisika Dasar I (Bu Iin)" },
+  { nama: "Karnadi, S.T., M.T.", noHp: "6281293034835", matkulKey: "Fisika Dasar I", matkulDisplay: "Fisika Dasar I" },
+  { nama: "Surya Amal, S.Si., M.Kes., Apt.", noHp: "6289620831891", matkulKey: "Biologi: Anatomi", matkulDisplay: "Biologi: Anatomi & Fisiologi Manusia" },
+  { nama: "Ir. Fathurohman, S.Pd., M.T.", noHp: "6281321667082", matkulKey: "Menggambar Teknik", matkulDisplay: "Menggambar Teknik (Teori & P)" },
+  { nama: "Roban, S.T., M.T.", noHp: "6285693235718", matkulKey: "Menggambar Teknik", matkulDisplay: "Menggambar Teknik (Teori & P)" },
+  { nama: "Hilda Tri Yulianti, S.Pd., M.Pd.", noHp: "6281212001412", matkulKey: "General English", matkulDisplay: "General English" },
+
+  // Mata Kuliah Tingkat Lanjut
+  { nama: "Dr. Nana Rahdiana, S.T., M.T.", noHp: "62811945295", matkulKey: "Analisis dan Perancangan Kerja", matkulDisplay: "Analisis & Perancangan Kerja (Pak Nana)" },
+  { nama: "Mohammad Fadli Perdana, S.T., M.T.", noHp: "628212002181", matkulKey: "Analisis dan Perancangan Kerja", matkulDisplay: "APK, K3 & Ergonomi (Bpk. Fadli P)" },
+  { nama: "Amallia, S.T., M.T.", noHp: "6281211436933", matkulKey: "Pemasaran Industri", matkulDisplay: "Pemasaran Industri & Estimasi Biaya" },
+  { nama: "Amelia Nur Fariza, S.T., M.Sc.", noHp: "6282125451565", matkulKey: "Pemodelan", matkulDisplay: "Pemodelan & Simulasi Sistem" },
+  { nama: "Annisa Nurizzati, S.T., M.Sc.", noHp: "6282110001628", matkulKey: "Perencanaan Produksi", matkulDisplay: "Perencanaan Produksi & Metopen" },
+  { nama: "Decut Della Oganda, S.T., M.T.", noHp: "6281377544576", matkulKey: "Pemodelan", matkulDisplay: "Pemodelan dan Simulasi Sistem (Ibu Della)" },
+  { nama: "Rizki Amalia Pratiwi, S.T., M.Sc.", noHp: "6281233347689", matkulKey: "Metodologi Penelitian", matkulDisplay: "Metodologi Penelitian & Ergonomi" },
+  { nama: "Dr. Ir. Muhamad Sayuti, S.T., M.T.", noHp: "6281395962999", matkulKey: "Manajemen Proyek", matkulDisplay: "Manajemen Proyek (Bpk. Ir. Sayuti)" }
 ];
 
 export default function App() {
@@ -271,7 +274,6 @@ export default function App() {
     const cleanNim = inputNim.trim();
     const cleanName = inputName.trim();
 
-    // Menerima digit standar atau format khusus Zan16012007
     if (!/^[a-zA-Z0-9]{6,16}$/.test(cleanNim)) {
       setAuthError('Format NIM tidak valid (gunakan 6-16 karakter alfanumerik).');
       return;
@@ -504,7 +506,7 @@ export default function App() {
     return item.status === statusFilter;
   });
 
-  // Hitungan metrik kontrol harian
+  // Hitungan kontrol harian
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayStartTime = todayStart.getTime();
@@ -512,6 +514,13 @@ export default function App() {
   const todaySubmissions = submissions.filter(s => (s.createdAt || 0) >= todayStartTime);
   const todayApproved = todaySubmissions.filter(s => s.status === 'Disetujui').length;
   const todayPending = todaySubmissions.filter(s => s.status === 'Menunggu').length;
+
+  // Filter dosen spesifik untuk PJMK yang aktif
+  const pjmkTargetLecturers = savedPjmkInfo ? ALL_LECTURERS_CONTACTS.filter(d => {
+    const pjmkMatkul = savedPjmkInfo.matkul.toLowerCase();
+    const targetKey = d.matkulKey.toLowerCase();
+    return pjmkMatkul.includes(targetKey) || targetKey.includes(pjmkMatkul);
+  }) : [];
 
   return (
     <div style={{ 
@@ -582,7 +591,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* SWITCH PERAN CEPAT */}
         {currentUser && savedPjmkInfo && activeTab !== 'admin' && (
           <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.3)', padding: '6px 8px 6px 14px', borderRadius: '999px' }}>
             <span style={{ fontSize: '0.75rem', opacity: 0.9 }}>
@@ -756,7 +764,7 @@ export default function App() {
 
             </div>
           ) : (
-            /* VIEW TAB UTAMA (MAHASISWA & PJMK) */
+            /* VIEW TAB UTAMA */
             <>
               {/* RUNNING NOTICE */}
               <div style={{ 
@@ -849,7 +857,6 @@ export default function App() {
                       <span style={{ fontSize: '0.7rem', color: theme.textMuted, backgroundColor: theme.subCard, padding: '3px 8px', borderRadius: '999px' }}>Semester 1</span>
                     </div>
 
-                    {/* SEARCH BAR */}
                     <div style={{ position: 'relative', marginBottom: '10px' }}>
                       <Search size={15} color={theme.textMuted} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                       <input 
@@ -879,7 +886,6 @@ export default function App() {
                       )}
                     </div>
 
-                    {/* PILLS FILTER HARI */}
                     <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '4px' }}>
                       {['Semua', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].map((day) => {
                         const isSelected = selectedDayFilter.toLowerCase() === day.toLowerCase();
@@ -906,7 +912,6 @@ export default function App() {
                       })}
                     </div>
 
-                    {/* DAFTAR JADWAL */}
                     <div style={{ maxHeight: '185px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
                       {filteredScheduleData.length === 0 ? (
                         <div style={{ padding: '20px 10px', textAlign: 'center', color: theme.textMuted, fontSize: '0.8rem' }}>
@@ -972,7 +977,6 @@ export default function App() {
                         </select>
                       </div>
 
-                      {/* KOTAK JADWAL OTOMATIS */}
                       <div style={{ 
                         backgroundColor: isDarkMode ? '#062e1e' : '#f0fdf4', 
                         border: `1.5px solid ${isDarkMode ? '#065f46' : '#bbf7d0'}`, 
@@ -1117,7 +1121,6 @@ export default function App() {
                               </div>
                             )}
 
-                            {/* STEPPER STATUS */}
                             <div style={{ margin: '12px 0 8px', padding: '10px', backgroundColor: theme.subCard, borderRadius: '10px', border: `1px solid ${theme.cardBorder}` }}>
                               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: theme.textMuted, marginBottom: '8px' }}>Pelacak Status:</div>
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
@@ -1176,7 +1179,7 @@ export default function App() {
               {activeTab === 'home' && activeRole === 'pjmk' && (
                 <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   
-                  {/* PANEL PJMK */}
+                  {/* PANEL UTAMA KOORDINATOR */}
                   <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '16px', border: `1px solid ${theme.cardBorder}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1217,33 +1220,43 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* KHUSUS PJMK: KONTAK DOSEN PENGAMPU TI26G UNTUK LAPORAN HASIL REKAP */}
+                  {/* KHUSUS: HANYA MUNCULKAN DOSEN SESUAI MATA KULIAH PJMK */}
                   <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '16px', border: `1.5px solid ${isDarkMode ? '#1e3a8a' : '#bfdbfe'}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
                       <GraduationCap size={18} color="#38bdf8" />
                       <div>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: theme.textMain }}>Kontak Dosen Pengampu Kelas TI26G</div>
-                        <div style={{ fontSize: '0.7rem', color: theme.textMuted }}>Kirim rekap izin langsung via WhatsApp ke dosen terkait</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: theme.textMain }}>
+                          Dosen Pengampu: {savedPjmkInfo?.matkul}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: theme.textMuted }}>
+                          Kirim rekapan langsung via WhatsApp tanpa perlu mencari kontak lain
+                        </div>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '170px', overflowY: 'auto' }}>
-                      {ALL_LECTURERS_CONTACTS.filter(d => d.isKelasG).map((dosen, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', borderRadius: '8px', backgroundColor: theme.subCard, border: `1px solid ${theme.cardBorder}` }}>
-                          <div>
-                            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: theme.textMain }}>{dosen.nama}</div>
-                            <div style={{ fontSize: '0.68rem', color: theme.textMuted }}>{dosen.matkul}</div>
-                          </div>
-                          <a 
-                            href={`https://wa.me/${dosen.noHp}?text=${encodeURIComponent(`Halo ${dosen.nama}, saya PJMK ${savedPjmkInfo?.matkul || 'mata kuliah'} dari kelas TI26G. Berikut rekapan pengajuan izin lintas kelas mahasiswa.`)}`}
-                            target="_blank" 
-                            rel="noreferrer" 
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#16a34a', textDecoration: 'none', fontSize: '0.72rem', fontWeight: 700, backgroundColor: isDarkMode ? '#064e3b' : '#dcfce7', padding: '5px 8px', borderRadius: '6px' }}
-                          >
-                            <PhoneCall size={11} /> Kirim Rekap
-                          </a>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {pjmkTargetLecturers.length === 0 ? (
+                        <div style={{ fontSize: '0.74rem', color: theme.textMuted, fontStyle: 'italic', padding: '4px 0' }}>
+                          Kontak dosen otomatis akan menyesuaikan nama mata kuliah Anda.
                         </div>
-                      ))}
+                      ) : (
+                        pjmkTargetLecturers.map((dosen, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 12px', borderRadius: '10px', backgroundColor: theme.subCard, border: `1px solid ${theme.cardBorder}` }}>
+                            <div>
+                              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: theme.textMain }}>{dosen.nama}</div>
+                              <div style={{ fontSize: '0.7rem', color: theme.textMuted }}>{dosen.matkulDisplay}</div>
+                            </div>
+                            <a 
+                              href={`https://wa.me/${dosen.noHp}?text=${encodeURIComponent(`Halo ${dosen.nama}, saya PJMK ${savedPjmkInfo?.matkul} dari kelas TI26G. Berikut saya laporkan data mahasiswa yang mengajukan izin lintas kelas.`)}`}
+                              target="_blank" 
+                              rel="noreferrer" 
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#16a34a', textDecoration: 'none', fontSize: '0.74rem', fontWeight: 700, backgroundColor: isDarkMode ? '#064e3b' : '#dcfce7', padding: '6px 10px', borderRadius: '6px' }}
+                            >
+                              <PhoneCall size={12} /> Lapor WA
+                            </a>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -1280,69 +1293,69 @@ export default function App() {
                     </div>
                   ) : (
                     filteredSubmissionsForPjmk.map((s) => (
-                  <div key={s.id} className="animate-fade" style={{ backgroundColor: theme.cardBg, borderRadius: '16px', padding: '16px', border: `1px solid ${theme.cardBorder}` }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                      <div>
-                        <div style={{ fontSize: '1rem', fontWeight: 700, color: theme.textMain }}>{s.nama}</div>
-                        <div style={{ fontSize: '0.78rem', color: theme.textMuted }}>NIM: {s.nim}</div>
-                      </div>
-                      <span style={{ 
-                        fontSize: '0.72rem', 
-                        padding: '4px 10px', 
-                        borderRadius: '999px', 
-                        fontWeight: 700, 
-                        backgroundColor: s.status === 'Disetujui' ? (isDarkMode ? '#064e3b' : '#dcfce7') : s.status === 'Ditolak' ? (isDarkMode ? '#7f1d1d' : '#fee2e2') : (isDarkMode ? '#78350f' : '#fef3c7'),
-                        color: s.status === 'Disetujui' ? '#4ade80' : s.status === 'Ditolak' ? '#f87171' : '#facc15'
-                      }}>
-                        {s.status}
-                      </span>
-                    </div>
-
-                    <div style={{ backgroundColor: theme.subCard, padding: '10px 12px', borderRadius: '10px', fontSize: '0.8rem', color: theme.textMain, lineHeight: 1.4, margin: '8px 0 10px' }}>
-                      <div><strong>Pindah ke:</strong> Kelas {s.kelasTujuan}</div>
-                      <div style={{ fontSize: '0.75rem', color: isDarkMode ? '#93c5fd' : '#2563eb' }}>
-                        Jadwal: {s.detailTujuan}
-                      </div>
-                      <div style={{ marginTop: '3px' }}><strong>Alasan:</strong> "{s.alasan}"</div>
-                      
-                      {s.status === 'Ditolak' && s.catatanPenolakan && (
-                        <div style={{ marginTop: '6px', color: '#f87171', fontSize: '0.74rem' }}>
-                          <strong>Alasan Ditolak:</strong> {s.catatanPenolakan}
+                      <div key={s.id} className="animate-fade" style={{ backgroundColor: theme.cardBg, borderRadius: '16px', padding: '16px', border: `1px solid ${theme.cardBorder}` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                          <div>
+                            <div style={{ fontSize: '1rem', fontWeight: 700, color: theme.textMain }}>{s.nama}</div>
+                            <div style={{ fontSize: '0.78rem', color: theme.textMuted }}>NIM: {s.nim}</div>
+                          </div>
+                          <span style={{ 
+                            fontSize: '0.72rem', 
+                            padding: '4px 10px', 
+                            borderRadius: '999px', 
+                            fontWeight: 700, 
+                            backgroundColor: s.status === 'Disetujui' ? (isDarkMode ? '#064e3b' : '#dcfce7') : s.status === 'Ditolak' ? (isDarkMode ? '#7f1d1d' : '#fee2e2') : (isDarkMode ? '#78350f' : '#fef3c7'),
+                            color: s.status === 'Disetujui' ? '#4ade80' : s.status === 'Ditolak' ? '#f87171' : '#facc15'
+                          }}>
+                            {s.status}
+                          </span>
                         </div>
-                      )}
 
-                      {s.lampiran && (
-                        <div style={{ marginTop: '8px' }}>
+                        <div style={{ backgroundColor: theme.subCard, padding: '10px 12px', borderRadius: '10px', fontSize: '0.8rem', color: theme.textMain, lineHeight: 1.4, margin: '8px 0 10px' }}>
+                          <div><strong>Pindah ke:</strong> Kelas {s.kelasTujuan}</div>
+                          <div style={{ fontSize: '0.75rem', color: isDarkMode ? '#93c5fd' : '#2563eb' }}>
+                            Jadwal: {s.detailTujuan}
+                          </div>
+                          <div style={{ marginTop: '3px' }}><strong>Alasan:</strong> "{s.alasan}"</div>
+                          
+                          {s.status === 'Ditolak' && s.catatanPenolakan && (
+                            <div style={{ marginTop: '6px', color: '#f87171', fontSize: '0.74rem' }}>
+                              <strong>Alasan Ditolak:</strong> {s.catatanPenolakan}
+                            </div>
+                          )}
+
+                          {s.lampiran && (
+                            <div style={{ marginTop: '8px' }}>
+                              <button 
+                                type="button" 
+                                onClick={() => setPreviewImageModal(s.lampiran)}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: isDarkMode ? '#1e293b' : '#e0e7ff', color: isDarkMode ? '#a5b4fc' : '#3730a3', border: 'none', padding: '5px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                              >
+                                <ImageIcon size={13} /> Buka Foto Bukti Shift
+                              </button>
+                            </div>
+                          )}
+
+                          <div style={{ fontSize: '0.72rem', color: theme.textMuted, marginTop: '6px' }}>
+                            Waktu: <strong>{s.fullDateTime || s.timestamp}</strong>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px' }}>
                           <button 
-                            type="button" 
-                            onClick={() => setPreviewImageModal(s.lampiran)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: isDarkMode ? '#1e293b' : '#e0e7ff', color: isDarkMode ? '#a5b4fc' : '#3730a3', border: 'none', padding: '5px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                            onClick={() => handleApprove(s.id)}
+                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, #15803d 0%, #16a34a 100%)', color: '#fff', border: 'none', padding: '9px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
                           >
-                            <ImageIcon size={13} /> Buka Foto Bukti Shift
+                            <CheckCircle2 size={15} /> Setujui
+                          </button>
+                          <button 
+                            onClick={() => handleOpenRejectModal(s)}
+                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)', color: '#fff', border: 'none', padding: '9px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                          >
+                            <XCircle size={15} /> Tolak & Catat
                           </button>
                         </div>
-                      )}
-
-                      <div style={{ fontSize: '0.72rem', color: theme.textMuted, marginTop: '6px' }}>
-                        Waktu: <strong>{s.fullDateTime || s.timestamp}</strong>
                       </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button 
-                        onClick={() => handleApprove(s.id)}
-                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, #15803d 0%, #16a34a 100%)', color: '#fff', border: 'none', padding: '9px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
-                      >
-                        <CheckCircle2 size={15} /> Setujui
-                      </button>
-                      <button 
-                        onClick={() => handleOpenRejectModal(s)}
-                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)', color: '#fff', border: 'none', padding: '9px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
-                      >
-                        <XCircle size={15} /> Tolak & Catat
-                      </button>
-                    </div>
-                  </div>
                     ))
                   )}
                 </div>
@@ -1377,7 +1390,7 @@ export default function App() {
                     </button>
                   </div>
 
-                  {/* KONTROL HUB: HANYA DITAMPILKAN JIKA LOGIN DENGAN AKUN KHUSUS FAUZHAN */}
+                  {/* KONTROL HUB: HANYA MUNCUL DI AKUN FAUZHAN */}
                   {isDeveloperUser && (
                     <div className="animate-modal" style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '16px', border: `1.5px solid #f59e0b` }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1446,14 +1459,14 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* DIREKTORI KONTAK SEMUA DOSEN PENGAMPU & MATKUL */}
+                  {/* DIREKTORI SEMUA DOSEN (UMUM) */}
                   <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '18px', border: `1px solid ${theme.cardBorder}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                       <PhoneCall size={18} color="#38bdf8" />
-                      <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0 }}>Kontak Seluruh Dosen Pengampu</h3>
+                      <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0 }}>Kontak Dosen Perkuliahan</h3>
                     </div>
                     <p style={{ fontSize: '0.74rem', color: theme.textMuted, margin: '0 0 12px 0' }}>
-                      Daftar nomor WhatsApp dosen untuk keperluan koordinasi perkuliahan & bimbingan:
+                      Nomor WhatsApp resmi dosen pengampu mata kuliah:
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
@@ -1461,7 +1474,7 @@ export default function App() {
                         <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', borderRadius: '10px', backgroundColor: theme.subCard, border: `1px solid ${theme.cardBorder}` }}>
                           <div>
                             <div style={{ fontSize: '0.8rem', fontWeight: 700, color: theme.textMain }}>{dosen.nama}</div>
-                            <div style={{ fontSize: '0.7rem', color: theme.textMuted }}>{dosen.matkul}</div>
+                            <div style={{ fontSize: '0.7rem', color: theme.textMuted }}>{dosen.matkulDisplay}</div>
                           </div>
                           <a 
                             href={`https://wa.me/${dosen.noHp}`} 
@@ -1469,7 +1482,7 @@ export default function App() {
                             rel="noreferrer" 
                             style={{ color: '#16a34a', textDecoration: 'none', fontSize: '0.72rem', fontWeight: 700, backgroundColor: isDarkMode ? '#064e3b' : '#dcfce7', padding: '5px 10px', borderRadius: '6px' }}
                           >
-                            Hubungi
+                            WhatsApp
                           </a>
                         </div>
                       ))}
@@ -1707,8 +1720,8 @@ export default function App() {
           transform: 'translateX(-50%)', 
           width: '100%', 
           maxWidth: '440px', 
-          height: '64px',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          height: '64px', 
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)', 
           backgroundColor: theme.cardBg, 
           borderTop: `1px solid ${theme.cardBorder}`, 
           display: 'flex', 
@@ -1716,8 +1729,8 @@ export default function App() {
           alignItems: 'center', 
           boxShadow: '0 -4px 20px rgba(0,0,0,0.06)', 
           zIndex: 40, 
-          transition: 'background-color 0.3s ease',
-          boxSizing: 'border-box'
+          transition: 'background-color 0.3s ease', 
+          boxSizing: 'border-box' 
         }}>
           <button 
             onClick={() => setActiveTab('home')} 
