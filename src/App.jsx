@@ -65,7 +65,6 @@ export default function App() {
   const [newNoticeText, setNewNoticeText] = useState(broadcastNotice);
 
   useEffect(() => {
-    // Sinkronisasi pengumuman dari dokumen Firestore 'settings/broadcast'
     const unsubNotice = onSnapshot(doc(db, 'settings', 'broadcast'), (docSnap) => {
       if (docSnap.exists() && docSnap.data().text) {
         setBroadcastNotice(docSnap.data().text);
@@ -484,7 +483,23 @@ export default function App() {
   });
 
   return (
-    <div style={{ width: '100%', maxWidth: '440px', minHeight: '100vh', backgroundColor: theme.bg, color: theme.textMain, position: 'relative', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)', transition: 'background-color 0.3s ease', margin: '0 auto' }}>
+    <div style={{ 
+      width: '100%', 
+      maxWidth: '440px', 
+      minHeight: '100vh', 
+      minHeight: '100dvh',
+      backgroundColor: theme.bg, 
+      color: theme.textMain, 
+      position: 'relative', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)', 
+      transition: 'background-color 0.3s ease', 
+      margin: '0 auto',
+      paddingBottom: '100px',
+      boxSizing: 'border-box',
+      overflowX: 'hidden'
+    }}>
       
       {/* HEADER */}
       <header style={{ 
@@ -608,7 +623,7 @@ export default function App() {
         </main>
       ) : (
         /* VIEW: SETELAH LOGIN */
-        <main className="animate-fade" style={{ padding: '16px 16px 80px', flex: 1 }}>
+        <main className="animate-fade" style={{ padding: '16px 16px 20px', flex: 1 }}>
 
           {/* RUNNING NOTICE */}
           <div style={{ 
@@ -1331,18 +1346,18 @@ export default function App() {
               </select>
 
               <textarea 
-                rows="2"
-                placeholder="Catatan penolakan..."
-                value={rejectionReasonInput}
-                onChange={(e) => setRejectionReasonInput(e.target.value)}
-                required
+                rows="2" 
+                placeholder="Catatan penolakan..." 
+                value={rejectionReasonInput} 
+                onChange={(e) => setRejectionReasonInput(e.target.value)} 
+                required 
                 style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: `1px solid ${theme.inputBorder}`, backgroundColor: theme.inputBg, color: theme.textMain, fontSize: '0.8rem', resize: 'none', boxSizing: 'border-box' }}
               />
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
                 <button 
                   type="button" 
-                  onClick={() => setRejectModalData(null)}
+                  onClick={() => setRejectModalData(null)} 
                   style={{ padding: '8px 12px', border: `1px solid ${theme.inputBorder}`, background: 'transparent', color: theme.textMuted, borderRadius: '6px', fontSize: '0.78rem', cursor: 'pointer' }}
                 >
                   Batal
@@ -1391,7 +1406,7 @@ export default function App() {
             <form onSubmit={handlePjmkLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <select 
                 value={selectedPjmkId} 
-                onChange={(e) => setSelectedPjmkId(e.target.value)}
+                onChange={(e) => setSelectedPjmkId(e.target.value)} 
                 style={{ width: '100%', padding: '10px 12px', border: `1.5px solid ${theme.inputBorder}`, borderRadius: '10px', fontSize: '0.85rem', backgroundColor: theme.inputBg, color: theme.textMain, outline: 'none' }}
               >
                 {LIST_PJMK.map(p => (
@@ -1402,10 +1417,10 @@ export default function App() {
               <input 
                 type="password" 
                 placeholder="Kata sandi PJMK" 
-                value={pjmkPasswordInput}
-                onChange={(e) => setPjmkPasswordInput(e.target.value)}
-                autoFocus
-                required
+                value={pjmkPasswordInput} 
+                onChange={(e) => setPjmkPasswordInput(e.target.value)} 
+                autoFocus 
+                required 
                 style={{ width: '100%', padding: '10px 12px', border: `1.5px solid ${theme.inputBorder}`, borderRadius: '10px', fontSize: '0.85rem', outline: 'none', backgroundColor: theme.inputBg, color: theme.textMain }}
               />
 
@@ -1418,7 +1433,7 @@ export default function App() {
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
                 <button 
                   type="button" 
-                  onClick={() => setShowPjmkLoginModal(false)}
+                  onClick={() => setShowPjmkLoginModal(false)} 
                   style={{ padding: '9px 14px', border: `1px solid ${theme.inputBorder}`, background: 'transparent', color: theme.textMuted, borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
                 >
                   Batal
@@ -1451,14 +1466,14 @@ export default function App() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
               <button 
                 onClick={() => setShowConfirmModal(false)} 
-                disabled={isSubmitting}
+                disabled={isSubmitting} 
                 style={{ padding: '8px 14px', border: `1px solid ${theme.inputBorder}`, background: 'transparent', color: theme.textMuted, borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}
               >
                 Cek Lagi
               </button>
               <button 
                 onClick={handleConfirmSubmit} 
-                disabled={isSubmitting}
+                disabled={isSubmitting} 
                 style={{ padding: '8px 16px', border: 'none', background: 'linear-gradient(135deg, #15803d 0%, #16a34a 100%)', color: '#fff', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
               >
                 {isSubmitting ? 'Mengirim...' : 'Kirim'}
@@ -1477,7 +1492,8 @@ export default function App() {
           transform: 'translateX(-50%)', 
           width: '100%', 
           maxWidth: '440px', 
-          height: '64px', 
+          height: '64px',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           backgroundColor: theme.cardBg, 
           borderTop: `1px solid ${theme.cardBorder}`, 
           display: 'flex', 
@@ -1485,7 +1501,8 @@ export default function App() {
           alignItems: 'center', 
           boxShadow: '0 -4px 20px rgba(0,0,0,0.06)', 
           zIndex: 40, 
-          transition: 'background-color 0.3s ease' 
+          transition: 'background-color 0.3s ease',
+          boxSizing: 'border-box'
         }}>
           <button 
             onClick={() => setActiveTab('home')} 
