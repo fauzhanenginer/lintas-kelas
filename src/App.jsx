@@ -26,7 +26,9 @@ import {
   Sliders,
   Users,
   FileText,
-  Activity
+  Activity,
+  PhoneCall,
+  GraduationCap
 } from 'lucide-react';
 import { SCHEDULE_DATA, LIST_PJMK, TARGET_CLASSES_LIST, ALL_CLASSES_SCHEDULES } from './data/schedules';
 
@@ -42,6 +44,30 @@ import {
   query, 
   orderBy 
 } from 'firebase/firestore';
+
+// DATA LENGKAP DOSEN PENGAMPU & MATKUL
+const ALL_LECTURERS_CONTACTS = [
+  { nama: "Bpk. Ir. Ade Suhara", noHp: "628128741746", isKelasG: true, matkul: "Pengantar Teknik Industri" },
+  { nama: "Pak Nana", noHp: "62811945295", isKelasG: true, matkul: "Kalkulus I" },
+  { nama: "Ibu. Yuni Syifau", noHp: "6283822577449", isKelasG: true, matkul: "Fisika Dasar I" },
+  { nama: "Ibu. Weni Trisasmi", noHp: "6282276722223", isKelasG: true, matkul: "Kimia Dasar I" },
+  { nama: "Bpk. Fadli P", noHp: "628212002181", isKelasG: true, matkul: "Gambar Teknik" },
+  { nama: "Ibu. Amalia", noHp: "6281211436933", isKelasG: true, matkul: "Tata Tulis Karya Ilmiah" },
+  { nama: "Ibu. Amelia Nur Fariza", noHp: "6282125451565", isKelasG: true, matkul: "Pendidikan Pancasila" },
+  { nama: "Ibu. Annisa Nurizati", noHp: "6282110001628", isKelasG: true, matkul: "Pendidikan Agama" },
+  { nama: "Ibu. Della", noHp: "6281377544576", isKelasG: false, matkul: "Dosen Prodi Teknik Industri" },
+  { nama: "Bpk. Karnadi", noHp: "6281293034835", isKelasG: false, matkul: "Dosen Pengampu Fakultas" },
+  { nama: "Bpk. Ir. Sayuti", noHp: "6281395962999", isKelasG: false, matkul: "Dosen Senior Teknik Industri" },
+  { nama: "Bpk. Suryadi", noHp: "6282113987998", isKelasG: false, matkul: "Dosen Teknik Industri" },
+  { nama: "Ibu. Akda", noHp: "6282245632220", isKelasG: false, matkul: "Dosen Pengampu Lintas Kelas" },
+  { nama: "Ibu. Rizky Amalia P", noHp: "6281233347689", isKelasG: false, matkul: "Dosen Pembina Kelas" },
+  { nama: "Bpk. Roban", noHp: "6285693235718", isKelasG: false, matkul: "Dosen Teknik Industri" },
+  { nama: "Bpk. Fathurohman", noHp: "6281321667082", isKelasG: false, matkul: "Dosen Pengampu" },
+  { nama: "Ibu. Hilda", noHp: "6281212001412", isKelasG: false, matkul: "Dosen Pengampu" },
+  { nama: "Ibu. Imas", noHp: "6285722190926", isKelasG: false, matkul: "Dosen Pembina" },
+  { nama: "Bpk. Surya Amal", noHp: "6289620831891", isKelasG: false, matkul: "Dosen Pengampu" },
+  { nama: "Bu Iin", noHp: "6281363690292", isKelasG: false, matkul: "Dosen Pengampu" }
+];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -140,6 +166,11 @@ export default function App() {
     }
   }, [savedPjmkInfo]);
 
+  // Validasi akun pemilik khusus pengembang
+  const isDeveloperUser = currentUser && 
+    currentUser.name.trim().toLowerCase() === 'muhammad fauzhan azhim' && 
+    currentUser.nim.trim().toLowerCase() === 'zan16012007';
+
   // Countdown Batas Pukul 20:00 WIB
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, isPassed: false });
 
@@ -219,25 +250,6 @@ export default function App() {
   const [pjmkPasswordInput, setPjmkPasswordInput] = useState('');
   const [pjmkPasswordError, setPjmkPasswordError] = useState('');
 
-  // --- STATE SUPER ADMIN / MONITORING PANEL ---
-  const [showAdminModal, setShowAdminModal] = useState(false);
-  const [adminPinInput, setAdminPinInput] = useState('');
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [adminPinError, setAdminPinError] = useState('');
-
-  const handleAdminLogin = (e) => {
-    e.preventDefault();
-    if (adminPinInput === '2609') { // PIN Admin Pengembang
-      setIsAdminAuthenticated(true);
-      setShowAdminModal(false);
-      setActiveTab('admin');
-      setAdminPinInput('');
-      setAdminPinError('');
-    } else {
-      setAdminPinError('PIN Pengembang salah!');
-    }
-  };
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -259,12 +271,13 @@ export default function App() {
     const cleanNim = inputNim.trim();
     const cleanName = inputName.trim();
 
-    if (!/^\d{6,14}$/.test(cleanNim)) {
-      setAuthError('Format NIM tidak valid. Gunakan 6-14 digit angka.');
+    // Menerima digit standar atau format khusus Zan16012007
+    if (!/^[a-zA-Z0-9]{6,16}$/.test(cleanNim)) {
+      setAuthError('Format NIM tidak valid (gunakan 6-16 karakter alfanumerik).');
       return;
     }
 
-    if (registeredUsers.some(u => u.nim === cleanNim)) {
+    if (registeredUsers.some(u => u.nim.toLowerCase() === cleanNim.toLowerCase())) {
       setAuthError('NIM ini sudah terdaftar di database. Silakan pilih Masuk.');
       return;
     }
@@ -289,11 +302,11 @@ export default function App() {
   const handleLogin = (e) => {
     e.preventDefault();
     setAuthError('');
-    const cleanNim = inputNim.trim();
+    const cleanNim = inputNim.trim().toLowerCase();
     const cleanName = inputName.trim().toLowerCase();
 
     const foundUser = registeredUsers.find(
-      u => u.nim === cleanNim && u.name.toLowerCase() === cleanName
+      u => u.nim.toLowerCase() === cleanNim && u.name.toLowerCase() === cleanName
     );
 
     if (!foundUser) {
@@ -310,7 +323,7 @@ export default function App() {
     if (window.confirm('Keluar dari sesi akun ini?')) {
       setCurrentUser(null);
       setActiveRole('mahasiswa');
-      setIsAdminAuthenticated(false);
+      setActiveTab('home');
       localStorage.removeItem('lintas_active_session');
     }
   };
@@ -372,7 +385,7 @@ export default function App() {
       await addDoc(collection(db, 'submissions'), newEntry);
       setShowConfirmModal(false);
       setFormData({ ...formData, alasan: '', lampiran: null });
-      alert("✅ Izin berhasil diajukan dan tersimpan di database online!");
+      alert("✅ Izin berhasil diajukan dan tersimpan di cloud!");
     } catch (err) {
       alert("Gagal mengirim data izin: " + err.message);
     } finally {
@@ -468,7 +481,6 @@ export default function App() {
     inputBorder: isDarkMode ? '#334155' : '#e2e8f0'
   };
 
-  // Filter Jadwal
   const filteredScheduleData = SCHEDULE_DATA.filter((item) => {
     const matchDay = selectedDayFilter === 'Semua' || item.hari.toLowerCase() === selectedDayFilter.toLowerCase();
     const queryStr = searchScheduleQuery.trim().toLowerCase();
@@ -492,7 +504,7 @@ export default function App() {
     return item.status === statusFilter;
   });
 
-  // --- LOGIKA PERHITUNGAN DATA HARIAN (KONTROL ADMIN) ---
+  // Hitungan metrik kontrol harian
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayStartTime = todayStart.getTime();
@@ -523,7 +535,7 @@ export default function App() {
       {/* HEADER */}
       <header style={{ 
         background: activeTab === 'admin'
-          ? 'linear-gradient(135deg, #451a03 0%, #78350f 100%)'
+          ? 'linear-gradient(135deg, #78350f 0%, #b45309 100%)'
           : activeRole === 'pjmk' 
             ? 'linear-gradient(135deg, #090d16 0%, #1e293b 100%)' 
             : isDarkMode 
@@ -541,14 +553,14 @@ export default function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', letterSpacing: '0.05em', textTransform: 'uppercase', opacity: 0.85, fontWeight: 600 }}>
               <Sparkles size={13} />
               {activeTab === 'admin' 
-                ? 'Super Developer Hub'
+                ? 'Owner Developer Hub' 
                 : activeRole === 'pjmk' 
                   ? 'Dashboard Pengurus' 
                   : 'Sistem Izin Kampus (Cloud)'}
             </div>
             <h1 style={{ margin: '4px 0 0', fontSize: '1.35rem', fontWeight: 800 }}>
               {activeTab === 'admin' 
-                ? 'KONTROL UTAMA' 
+                ? 'KONTROL HUB' 
                 : activeRole === 'pjmk' 
                   ? savedPjmkInfo?.roleName?.toUpperCase() 
                   : 'LINTAS KELAS'}
@@ -607,7 +619,7 @@ export default function App() {
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: theme.textMuted, display: 'block', marginBottom: '6px' }}>Nama Lengkap</label>
                 <input 
                   type="text" 
-                  placeholder="Contoh: Muhammad Fauzhan" 
+                  placeholder="Contoh: Muhammad Fauzhan Azhim" 
                   value={inputName} 
                   onChange={(e) => setInputName(e.target.value)} 
                   required 
@@ -619,7 +631,7 @@ export default function App() {
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: theme.textMuted, display: 'block', marginBottom: '6px' }}>Nomor Induk Mahasiswa (NIM)</label>
                 <input 
                   type="text" 
-                  placeholder="Contoh: 16012007" 
+                  placeholder="Contoh: Zan16012007" 
                   value={inputNim} 
                   onChange={(e) => setInputNim(e.target.value)} 
                   required 
@@ -654,32 +666,30 @@ export default function App() {
         /* VIEW: SETELAH LOGIN */
         <main className="animate-fade" style={{ padding: '16px 16px 20px', flex: 1 }}>
 
-          {/* VIEW TAB KHUSUS SUPER ADMIN */}
-          {activeTab === 'admin' ? (
+          {/* VIEW: EKSKLUSIF KONTROL HUB PENGEMBANG */}
+          {activeTab === 'admin' && isDeveloperUser ? (
             <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               
-              {/* STATUS KONTROL */}
-              <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '18px', border: `1.5px solid ${theme.cardBorder}` }}>
+              <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '18px', border: `1.5px solid #f59e0b` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Activity size={20} color="#f59e0b" />
-                    <h2 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: theme.textMain }}>Aktivitas Hari Ini</h2>
+                    <h2 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: theme.textMain }}>Kontrol Utama Pengembang</h2>
                   </div>
                   <span style={{ fontSize: '0.7rem', color: '#f59e0b', backgroundColor: isDarkMode ? '#451a03' : '#fef3c7', padding: '3px 8px', borderRadius: '999px', fontWeight: 700 }}>
-                    Real-time Cloud
+                    Online & Terhubung
                   </span>
                 </div>
 
-                {/* KARTU STATISTIK */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                   <div style={{ backgroundColor: theme.subCard, padding: '12px', borderRadius: '12px', border: `1px solid ${theme.cardBorder}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: theme.textMuted, fontSize: '0.72rem', fontWeight: 600 }}>
-                      <Users size={14} /> Total Akun
+                      <Users size={14} /> Mahasiswa
                     </div>
                     <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8', marginTop: '4px' }}>
                       {registeredUsers.length}
                     </div>
-                    <div style={{ fontSize: '0.68rem', color: theme.textMuted }}>Mahasiswa terdaftar</div>
+                    <div style={{ fontSize: '0.68rem', color: theme.textMuted }}>Akun terdaftar di cloud</div>
                   </div>
 
                   <div style={{ backgroundColor: theme.subCard, padding: '12px', borderRadius: '12px', border: `1px solid ${theme.cardBorder}` }}>
@@ -697,14 +707,14 @@ export default function App() {
                   onClick={() => setActiveTab('home')}
                   style={{ marginTop: '14px', width: '100%', background: 'transparent', border: `1px solid ${theme.inputBorder}`, color: theme.textMuted, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
                 >
-                  Kembali ke Menu Utama
+                  Tutup & Kembali ke Aplikasi
                 </button>
               </div>
 
-              {/* LIST PENGGUNA TERDAFTAR */}
+              {/* DAFTAR USER */}
               <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '16px', border: `1px solid ${theme.cardBorder}` }}>
                 <h3 style={{ fontSize: '0.88rem', fontWeight: 700, margin: '0 0 10px 0', color: theme.textMain }}>
-                  Daftar Mahasiswa Terdaftar ({registeredUsers.length})
+                  Daftar Nama Akun Mahasiswa ({registeredUsers.length})
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto' }}>
                   {registeredUsers.map((u, i) => (
@@ -719,7 +729,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* LIST IZIN MASUK HARI INI */}
+              {/* SEMUA IZIN HARI INI */}
               <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '16px', border: `1px solid ${theme.cardBorder}` }}>
                 <h3 style={{ fontSize: '0.88rem', fontWeight: 700, margin: '0 0 10px 0', color: theme.textMain }}>
                   Semua Izin Masuk Hari Ini ({todaySubmissions.length})
@@ -737,7 +747,7 @@ export default function App() {
                           <span style={{ fontSize: '0.68rem', fontWeight: 700, color: sub.status === 'Disetujui' ? '#4ade80' : sub.status === 'Ditolak' ? '#f87171' : '#facc15' }}>{sub.status}</span>
                         </div>
                         <div style={{ fontSize: '0.72rem', color: theme.textMuted }}>{sub.matkul} ➔ Kelas {sub.kelasTujuan}</div>
-                        <div style={{ fontSize: '0.68rem', color: theme.textMuted, marginTop: '2px' }}>Waktu: {sub.timestamp}</div>
+                        <div style={{ fontSize: '0.68rem', color: theme.textMuted, marginTop: '2px' }}>Waktu: {sub.timestamp} • PJMK: {sub.pjmk}</div>
                       </div>
                     ))
                   )}
@@ -832,7 +842,7 @@ export default function App() {
               {activeTab === 'home' && activeRole === 'mahasiswa' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   
-                  {/* JADWAL DENGAN FILTER & SEARCH */}
+                  {/* JADWAL */}
                   <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '16px', border: `1px solid ${theme.cardBorder}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                       <h2 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: theme.textMain }}>Jadwal Resmi Kelas TI26G</h2>
@@ -1144,7 +1154,7 @@ export default function App() {
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', paddingTop: '8px', borderTop: `1px dashed ${theme.cardBorder}` }}>
                               <span style={{ fontSize: '0.72rem', color: theme.textMuted }}>
-                                {sub => sub.fullDateTime || sub.timestamp}
+                                {s.fullDateTime || s.timestamp}
                               </span>
                               <button 
                                 onClick={() => handleDeleteSubmission(s.id)} 
@@ -1202,8 +1212,38 @@ export default function App() {
                         }}
                         style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: isDarkMode ? '#1e293b' : '#eff6ff', color: '#38bdf8', border: `1px solid ${isDarkMode ? '#334155' : '#bfdbfe'}`, padding: '9px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
                       >
-                        <Download size={14} /> Unduh CSV
+                        <Download size={14} /> Unduh CSV Rekap
                       </button>
+                    </div>
+                  </div>
+
+                  {/* KHUSUS PJMK: KONTAK DOSEN PENGAMPU TI26G UNTUK LAPORAN HASIL REKAP */}
+                  <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '16px', border: `1.5px solid ${isDarkMode ? '#1e3a8a' : '#bfdbfe'}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                      <GraduationCap size={18} color="#38bdf8" />
+                      <div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: theme.textMain }}>Kontak Dosen Pengampu Kelas TI26G</div>
+                        <div style={{ fontSize: '0.7rem', color: theme.textMuted }}>Kirim rekap izin langsung via WhatsApp ke dosen terkait</div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '170px', overflowY: 'auto' }}>
+                      {ALL_LECTURERS_CONTACTS.filter(d => d.isKelasG).map((dosen, i) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', borderRadius: '8px', backgroundColor: theme.subCard, border: `1px solid ${theme.cardBorder}` }}>
+                          <div>
+                            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: theme.textMain }}>{dosen.nama}</div>
+                            <div style={{ fontSize: '0.68rem', color: theme.textMuted }}>{dosen.matkul}</div>
+                          </div>
+                          <a 
+                            href={`https://wa.me/${dosen.noHp}?text=${encodeURIComponent(`Halo ${dosen.nama}, saya PJMK ${savedPjmkInfo?.matkul || 'mata kuliah'} dari kelas TI26G. Berikut rekapan pengajuan izin lintas kelas mahasiswa.`)}`}
+                            target="_blank" 
+                            rel="noreferrer" 
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#16a34a', textDecoration: 'none', fontSize: '0.72rem', fontWeight: 700, backgroundColor: isDarkMode ? '#064e3b' : '#dcfce7', padding: '5px 8px', borderRadius: '6px' }}
+                          >
+                            <PhoneCall size={11} /> Kirim Rekap
+                          </a>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -1240,69 +1280,69 @@ export default function App() {
                     </div>
                   ) : (
                     filteredSubmissionsForPjmk.map((s) => (
-                      <div key={s.id} className="animate-fade" style={{ backgroundColor: theme.cardBg, borderRadius: '16px', padding: '16px', border: `1px solid ${theme.cardBorder}` }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                          <div>
-                            <div style={{ fontSize: '1rem', fontWeight: 700, color: theme.textMain }}>{s.nama}</div>
-                            <div style={{ fontSize: '0.78rem', color: theme.textMuted }}>NIM: {s.nim}</div>
-                          </div>
-                          <span style={{ 
-                            fontSize: '0.72rem', 
-                            padding: '4px 10px', 
-                            borderRadius: '999px', 
-                            fontWeight: 700, 
-                            backgroundColor: s.status === 'Disetujui' ? (isDarkMode ? '#064e3b' : '#dcfce7') : s.status === 'Ditolak' ? (isDarkMode ? '#7f1d1d' : '#fee2e2') : (isDarkMode ? '#78350f' : '#fef3c7'),
-                            color: s.status === 'Disetujui' ? '#4ade80' : s.status === 'Ditolak' ? '#f87171' : '#facc15'
-                          }}>
-                            {s.status}
-                          </span>
-                        </div>
-
-                        <div style={{ backgroundColor: theme.subCard, padding: '10px 12px', borderRadius: '10px', fontSize: '0.8rem', color: theme.textMain, lineHeight: 1.4, margin: '8px 0 10px' }}>
-                          <div><strong>Pindah ke:</strong> Kelas {s.kelasTujuan}</div>
-                          <div style={{ fontSize: '0.75rem', color: isDarkMode ? '#93c5fd' : '#2563eb' }}>
-                            Jadwal: {s.detailTujuan}
-                          </div>
-                          <div style={{ marginTop: '3px' }}><strong>Alasan:</strong> "{s.alasan}"</div>
-                          
-                          {s.status === 'Ditolak' && s.catatanPenolakan && (
-                            <div style={{ marginTop: '6px', color: '#f87171', fontSize: '0.74rem' }}>
-                              <strong>Alasan Ditolak:</strong> {s.catatanPenolakan}
-                            </div>
-                          )}
-
-                          {s.lampiran && (
-                            <div style={{ marginTop: '8px' }}>
-                              <button 
-                                type="button" 
-                                onClick={() => setPreviewImageModal(s.lampiran)}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: isDarkMode ? '#1e293b' : '#e0e7ff', color: isDarkMode ? '#a5b4fc' : '#3730a3', border: 'none', padding: '5px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
-                              >
-                                <ImageIcon size={13} /> Buka Foto Bukti Shift
-                              </button>
-                            </div>
-                          )}
-
-                          <div style={{ fontSize: '0.72rem', color: theme.textMuted, marginTop: '6px' }}>
-                            Waktu: <strong>{s.fullDateTime || s.timestamp}</strong>
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button 
-                            onClick={() => handleApprove(s.id)}
-                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, #15803d 0%, #16a34a 100%)', color: '#fff', border: 'none', padding: '9px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
-                          >
-                            <CheckCircle2 size={15} /> Setujui
-                          </button>
-                          <button 
-                            onClick={() => handleOpenRejectModal(s)}
-                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)', color: '#fff', border: 'none', padding: '9px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
-                          >
-                            <XCircle size={15} /> Tolak & Catat
-                          </button>
-                        </div>
+                  <div key={s.id} className="animate-fade" style={{ backgroundColor: theme.cardBg, borderRadius: '16px', padding: '16px', border: `1px solid ${theme.cardBorder}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div>
+                        <div style={{ fontSize: '1rem', fontWeight: 700, color: theme.textMain }}>{s.nama}</div>
+                        <div style={{ fontSize: '0.78rem', color: theme.textMuted }}>NIM: {s.nim}</div>
                       </div>
+                      <span style={{ 
+                        fontSize: '0.72rem', 
+                        padding: '4px 10px', 
+                        borderRadius: '999px', 
+                        fontWeight: 700, 
+                        backgroundColor: s.status === 'Disetujui' ? (isDarkMode ? '#064e3b' : '#dcfce7') : s.status === 'Ditolak' ? (isDarkMode ? '#7f1d1d' : '#fee2e2') : (isDarkMode ? '#78350f' : '#fef3c7'),
+                        color: s.status === 'Disetujui' ? '#4ade80' : s.status === 'Ditolak' ? '#f87171' : '#facc15'
+                      }}>
+                        {s.status}
+                      </span>
+                    </div>
+
+                    <div style={{ backgroundColor: theme.subCard, padding: '10px 12px', borderRadius: '10px', fontSize: '0.8rem', color: theme.textMain, lineHeight: 1.4, margin: '8px 0 10px' }}>
+                      <div><strong>Pindah ke:</strong> Kelas {s.kelasTujuan}</div>
+                      <div style={{ fontSize: '0.75rem', color: isDarkMode ? '#93c5fd' : '#2563eb' }}>
+                        Jadwal: {s.detailTujuan}
+                      </div>
+                      <div style={{ marginTop: '3px' }}><strong>Alasan:</strong> "{s.alasan}"</div>
+                      
+                      {s.status === 'Ditolak' && s.catatanPenolakan && (
+                        <div style={{ marginTop: '6px', color: '#f87171', fontSize: '0.74rem' }}>
+                          <strong>Alasan Ditolak:</strong> {s.catatanPenolakan}
+                        </div>
+                      )}
+
+                      {s.lampiran && (
+                        <div style={{ marginTop: '8px' }}>
+                          <button 
+                            type="button" 
+                            onClick={() => setPreviewImageModal(s.lampiran)}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: isDarkMode ? '#1e293b' : '#e0e7ff', color: isDarkMode ? '#a5b4fc' : '#3730a3', border: 'none', padding: '5px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            <ImageIcon size={13} /> Buka Foto Bukti Shift
+                          </button>
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: '0.72rem', color: theme.textMuted, marginTop: '6px' }}>
+                        Waktu: <strong>{s.fullDateTime || s.timestamp}</strong>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        onClick={() => handleApprove(s.id)}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, #15803d 0%, #16a34a 100%)', color: '#fff', border: 'none', padding: '9px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                      >
+                        <CheckCircle2 size={15} /> Setujui
+                      </button>
+                      <button 
+                        onClick={() => handleOpenRejectModal(s)}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)', color: '#fff', border: 'none', padding: '9px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                      >
+                        <XCircle size={15} /> Tolak & Catat
+                      </button>
+                    </div>
+                  </div>
                     ))
                   )}
                 </div>
@@ -1337,30 +1377,26 @@ export default function App() {
                     </button>
                   </div>
 
-                  {/* TOMBOL RAHASIA AKSES DEVELOPER / OWNER */}
-                  <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '16px', border: `1px dashed #f59e0b` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Sliders size={18} color="#f59e0b" />
-                        <div>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: theme.textMain }}>Panel Kontrol Pengembang</div>
-                          <div style={{ fontSize: '0.7rem', color: theme.textMuted }}>Pantau user aktif & kontrol aplikasi</div>
+                  {/* KONTROL HUB: HANYA DITAMPILKAN JIKA LOGIN DENGAN AKUN KHUSUS FAUZHAN */}
+                  {isDeveloperUser && (
+                    <div className="animate-modal" style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '16px', border: `1.5px solid #f59e0b` }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Sliders size={18} color="#f59e0b" />
+                          <div>
+                            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: theme.textMain }}>Kontrol Hub Pengembang</div>
+                            <div style={{ fontSize: '0.7rem', color: theme.textMuted }}>Akses Pemilik (Muhammad Fauzhan Azhim)</div>
+                          </div>
                         </div>
+                        <button 
+                          onClick={() => setActiveTab('admin')}
+                          style={{ backgroundColor: '#f59e0b', color: '#fff', border: 'none', padding: '7px 14px', borderRadius: '8px', fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer' }}
+                        >
+                          Buka Kontrol
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => {
-                          if (isAdminAuthenticated) {
-                            setActiveTab('admin');
-                          } else {
-                            setShowAdminModal(true);
-                          }
-                        }}
-                        style={{ backgroundColor: '#f59e0b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer' }}
-                      >
-                        Buka Hub
-                      </button>
                     </div>
-                  </div>
+                  )}
 
                   {/* HAK AKSES PJMK */}
                   {savedPjmkInfo ? (
@@ -1410,13 +1446,43 @@ export default function App() {
                     </div>
                   </div>
 
+                  {/* DIREKTORI KONTAK SEMUA DOSEN PENGAMPU & MATKUL */}
+                  <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '18px', border: `1px solid ${theme.cardBorder}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <PhoneCall size={18} color="#38bdf8" />
+                      <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0 }}>Kontak Seluruh Dosen Pengampu</h3>
+                    </div>
+                    <p style={{ fontSize: '0.74rem', color: theme.textMuted, margin: '0 0 12px 0' }}>
+                      Daftar nomor WhatsApp dosen untuk keperluan koordinasi perkuliahan & bimbingan:
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
+                      {ALL_LECTURERS_CONTACTS.map((dosen, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', borderRadius: '10px', backgroundColor: theme.subCard, border: `1px solid ${theme.cardBorder}` }}>
+                          <div>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: theme.textMain }}>{dosen.nama}</div>
+                            <div style={{ fontSize: '0.7rem', color: theme.textMuted }}>{dosen.matkul}</div>
+                          </div>
+                          <a 
+                            href={`https://wa.me/${dosen.noHp}`} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            style={{ color: '#16a34a', textDecoration: 'none', fontSize: '0.72rem', fontWeight: 700, backgroundColor: isDarkMode ? '#064e3b' : '#dcfce7', padding: '5px 10px', borderRadius: '6px' }}
+                          >
+                            Hubungi
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* KARTU LAPOR KENDALA */}
                   <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', padding: '18px', border: '1.5px solid #fbcfe8' }}>
                     <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: '0 0 6px 0', color: '#be185d' }}>
                       🛠️ Lapor Kendala Web
                     </h3>
                     <p style={{ fontSize: '0.78rem', color: theme.textMuted, margin: '0 0 12px 0', lineHeight: 1.4 }}>
-                      Menemukan error atau kendala sistem? Hubungi langsung pengembang melalui Instagram:
+                      Menemukan error atau kendala sistem? Hubungi pengembang melalui Instagram:
                     </p>
                     <a 
                       href="https://www.instagram.com/az__znn?stkn=eHY3ejNseG1jbWth" 
@@ -1534,57 +1600,6 @@ export default function App() {
             <div style={{ padding: '12px', textAlign: 'center', maxHeight: '420px', overflowY: 'auto' }}>
               <img src={previewImageModal} alt="Bukti Shift" style={{ maxWidth: '100%', borderRadius: '8px' }} />
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL PIN PENGEMBANG / SUPER ADMIN */}
-      {showAdminModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.75)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 110 }}>
-          <div className="animate-modal" style={{ backgroundColor: theme.cardBg, padding: '24px', borderRadius: '20px', maxWidth: '320px', width: '100%', border: `1px solid ${theme.cardBorder}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d97706' }}>
-                <Sliders size={18} />
-              </div>
-              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: theme.textMain }}>Akses Pengembang</h3>
-            </div>
-            <p style={{ fontSize: '0.8rem', color: theme.textMuted, margin: '4px 0 16px' }}>
-              Masukkan PIN Pengembang untuk memantau data harian:
-            </p>
-
-            <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <input 
-                type="password" 
-                placeholder="PIN Rahasia (default: 2609)" 
-                value={adminPinInput} 
-                onChange={(e) => setAdminPinInput(e.target.value)} 
-                autoFocus 
-                required 
-                style={{ width: '100%', padding: '10px 12px', border: `1.5px solid ${theme.inputBorder}`, borderRadius: '10px', fontSize: '0.85rem', outline: 'none', backgroundColor: theme.inputBg, color: theme.textMain }}
-              />
-
-              {adminPinError && (
-                <div style={{ color: '#dc2626', fontSize: '0.75rem', fontWeight: 600 }}>
-                  {adminPinError}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
-                <button 
-                  type="button" 
-                  onClick={() => setShowAdminModal(false)} 
-                  style={{ padding: '9px 14px', border: `1px solid ${theme.inputBorder}`, background: 'transparent', color: theme.textMuted, borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
-                >
-                  Batal
-                </button>
-                <button 
-                  type="submit" 
-                  style={{ padding: '9px 16px', border: 'none', background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', color: '#fff', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }}
-                >
-                  Masuk Hub
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
